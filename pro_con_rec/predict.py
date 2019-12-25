@@ -6,11 +6,11 @@ import os
 
 sift=cv2.xfeatures2d.SIFT_create()
 knn = joblib.load('./knn_model.m')
-svm = joblib.load('svm_model.m')
+svm = joblib.load('./svm_model.m')
 
 def predict(img):
     # pre-process
-    gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    gray= img
     gray=cv2.resize(gray, (400, 400), interpolation=cv2.INTER_AREA)
     gray=cv2.equalizeHist(gray)
     keypoints, des=sift.detectAndCompute(gray, None)
@@ -26,10 +26,14 @@ def predict(img):
 
 
 
-filepath = './Test/pros'
+filepath = './Test/pros/'
 filelist = os.listdir(filepath)
 for filename in filelist:
-    img=cv2.imread(os.path.join(filepath, filename))
+    print(filename)
+    if filename == ".gitkeep":
+        continue
+    # print(os.path.join(filepath, filename))
+    img=cv2.imread(os.path.join(filepath, filename),0)
 # cv2.imshow("img", img)
 # cv2.waitKey(0)
     result = predict(img)
