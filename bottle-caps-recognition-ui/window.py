@@ -51,12 +51,12 @@ class Window(QMainWindow):
         self.setGeometry(100, 100, 1280, 720)  # 前两个参数是显示窗口的位置
         self.setWindowTitle("瓶盖识别")
         # debug slider
-        self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.move(100, 660)
-        lcd = QLCDNumber(self)
-        lcd.move(300, 660)
-        self.slider.setMaximum(255)
-        self.slider.valueChanged.connect(lcd.display)
+        # self.slider = QSlider(Qt.Horizontal, self)
+        # self.slider.move(100, 660)
+        # lcd = QLCDNumber(self)
+        # lcd.move(300, 660)
+        # self.slider.setMaximum(255)
+        # self.slider.valueChanged.connect(lcd.display)
         # 初始化部件
         self.menubar = self.menuBar()  # 菜单栏
         self.pic_action = QAction(QIcon("image.png"), "图片", self)  # 菜单栏选择图片action
@@ -96,7 +96,8 @@ class Window(QMainWindow):
     def get_pic(self, i):
         return self.chosen_pics[i].replace("/", "\\")
 
-    def matrix2pixmap(self, matrix):
+    @staticmethod
+    def matrix2pixmap(matrix):
         height, width, bytesPerComponent = matrix.shape
         bytesPerLine = 3 * width
         cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB, matrix)
@@ -122,7 +123,7 @@ class Window(QMainWindow):
         image_path = self.get_pic(self.cur_index)
         # self.show_result_filename(self.detector.standing_cap_detect(image_path))
         # cv2.imshow("Image", self.detector.pro_con_detect(image_path, self.slider.value()))
-        self.show_result_matrix(self.detector.pro_con_detect(image_path, 120))
+        self.show_result_matrix(self.detector.all_detect(image_path))
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 

@@ -3,60 +3,109 @@ import argparse
 import imutils
 import cv2
 
+import time
+import os
+
+MIN_MATCH_COUNT = 5
+
+template_path = ".\\template"
+
+
+def get_filelist(dir, Filelist):
+    newDir = dir
+    if os.path.isfile(dir):
+        Filelist.append(dir)
+    elif os.path.isdir(dir):
+        for s in os.listdir(dir):
+            newDir = os.path.join(dir, s)
+            get_filelist(newDir, Filelist)
+    return Filelist
+
 
 def standing_cap_detection(imagePath):
-    print("standing cap detection start")
-    print(imagePath)
-    # load the image, convert it to grayscale, and initialize the
-    # bookkeeping variable to keep track of the matched region
-    template = cv2.imread("./template.png")
-    template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-    template = cv2.Canny(template, 50, 200)
-    (tH, tW) = template.shape[:2]
-    # cv2.imshow("Template", template)
+    start_time = time.time()  # 记录程序开始运行时间
+    a = []
+    filelist = get_filelist(template_path, a)
+    print(filelist)
+    reslist = []
+    for file in filelist:
+        template = cv2.imread(file, 0)
+        (tH, tW) = template.shape[:2]
+        print(file)
 
-    image = cv2.imread(imagePath)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    found = None
+        image = cv2.imread(imagePath, 0)
+        # image smaller make faster
 
-    # loop over the scales of the image
-    for scale in np.linspace(0.2, 1.0, 20)[::-1]:
-        # resize the image according to the scale, and keep track
-        # of the ratio of the resizing
-        resized = imutils.resize(gray, width=int(gray.shape[1] * scale))
-        r = gray.shape[1] / float(resized.shape[1])
+        res = SIFT(template, image)
+        print(res)
+        if res is not None:
+            reslist.append(res)
 
-        # if the resized image is smaller than the template, then break
-        # from the loop
-        if resized.shape[0] < tH or resized.shape[1] < tW:
-            break
+    end_time = time.time()  # 记录程序结束运行时间
+    print('Took %f second for one pic' % (end_time - start_time))
+    return reslist
 
-        # detect edges in the resized, grayscale image and apply template
-        # matching to find the template in the image
-        edged = cv2.Canny(resized, 50, 200)
-        result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
-        (_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
 
-        # check to see if the iteration should be visualized
+def SIFT(img1, img2):
+    # 初始化SIFT探测器
+    # sift = cv2.xfeatures2d.SIFT_create()
 
-        #     # draw a bounding box around the detected region
-        #     clone = np.dstack([edged, edged, edged])
-        #     cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
-        #         (maxLoc[0] + tW, maxLoc[1] + tH), (0, 0, 255), 2)
+    # 初始化surf探测器
 
-        #     cv2.imshow("Visualize", clone)
-        #     cv2.waitKey(0)
+    sift = cv2.xfeatures2d.SURF_create()
+    # 海塞矩阵阈值，在这里调整精度，值越大点越少，越精准
+    # 用SIFT找到关键点和描述符
+    kp1, des1 = sift.detectAndCompute(img1, None)
+    kp2, des2 = sift.detectAndCompute(img2, None)
 
-        # if we have found a new maximum correlation value, then ipdate
-        # the bookkeeping variable
-        if found is None or maxVal > found[0]:
-            found = (maxVal, maxLoc, r)
+    FLANN_INDEX_KDTREE = 0
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    search_params = dict(checks=50)
 
-    # unpack the bookkeeping varaible and compute the (x, y) coordinates
-    # of the bounding box based on the resized ratio
-    (_, maxLoc, r) = found
-    (startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
-    (endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(des1, des2, k=2)
 
-    # return only one location for the time being
-    return (startX, startY, endX, endY)
+    good = []
+    for m, n in matches:
+        if m.distance < 0.7 * n.distance:
+            good.append(m)
+
+    '''
+    现在我们设置一个条件，即至少10个匹配（由MIN_MATCH_COUNT定义）将在那里以找到该对象。
+    否则，只需显示一条消息，说明没有足够的匹配。
+    如果找到足够的匹配，我们将提取两个图像中匹配关键点的位置。
+    他们通过寻找这种转变。 一旦我们得到这个3x3转换矩阵，
+    我们就用它来将queryImage的角点转换成trainImage中相应的点。 然后我们绘制它。
+    '''
+    res = None
+    if len(good) > MIN_MATCH_COUNT:
+        print(len(good))
+        src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+
+        # M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 1.0)
+        M, mask = cv2.findHomography(src_pts, dst_pts, 0, confidence=1.0)
+        matchesMask = mask.ravel().tolist()
+
+        h, w = img1.shape
+        pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
+        dst = cv2.perspectiveTransform(pts, M)
+
+        img2 = cv2.polylines(img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
+        res = [np.int32(dst)]
+
+    else:
+        print("Not enough matches are found", (len(good), MIN_MATCH_COUNT))
+        matchesMask = None
+
+    # 最后绘制内点(如果成功找到对象)或匹配关键点(如果失败)
+
+    draw_params = dict(matchColor=(0, 255, 0),
+                       singlePointColor=None,
+                       matchesMask=matchesMask,
+                       flags=2)
+
+    img3 = cv2.drawMatches(img1, kp1, img2, kp2, good, None, **draw_params)
+    # cv2.imshow("Window", img3)
+    # cv2.waitKey(0)
+    return res

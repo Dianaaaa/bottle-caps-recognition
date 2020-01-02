@@ -8,23 +8,23 @@ class Detector:
     def __init__(self):
         self.pro_con_detector = ProConDetector()
 
+    def all_detect(self, image_path):
+        img = self.pro_con_detect(image_path, 120)
+        locations = self.standing_cap_detect(image_path)
+        return self.sign_with_rect_and_text(img, locations, "standing")
+
     def pro_con_detect(self, image_path, threshold):
         return self.pro_con_detector.detect(image_path, threshold)
 
     # 返回临时文件名
-    def standing_cap_detect(self, image_path):
-        location = standing_cap_detection(image_path)
-        return self.sign_with_rect_and_text(image_path, location, "standing_cap")
+    @staticmethod
+    def standing_cap_detect(image_path):
+        return standing_cap_detection(image_path)
 
     # location: the location to draw rect; text: signal text
-    def sign_with_rect_and_text(self, image_path, location, text):
-        im = Image.open(image_path)
-        draw = ImageDraw.Draw(im)
-        draw.rectangle(location, outline='blue', width=2)
-
-        font = ImageFont.truetype("consola.ttf", 40, encoding="unic")  # 设置字
-        draw.text(location, text, 'fuchsia', font)
-        temp_filename = "temp.png"
-        im.save(temp_filename)
-        return temp_filename
+    @staticmethod
+    def sign_with_rect_and_text(img, locations, text):
+        for location in locations:
+            cv2.polylines(img, location, True, 255, 3, cv2.LINE_AA)
+        return img
 
