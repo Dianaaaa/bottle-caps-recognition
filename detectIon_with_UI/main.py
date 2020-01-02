@@ -69,7 +69,7 @@ class capDetecter(QWidget):
     def screen_print(self, name):
         self.pixmap = QPixmap(name)
         self.lbl.setPixmap(self.pixmap.scaled(
-            self.lbl.size(), Qt.KeepAspectRatio))
+                self.lbl.size(), Qt.KeepAspectRatio))
 
     def open_file(self):
         ofname = QFileDialog.getOpenFileName(self, 'Open file')[0]

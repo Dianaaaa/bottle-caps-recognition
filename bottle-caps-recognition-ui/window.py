@@ -5,6 +5,7 @@ from PyQt5.QtCore import (Qt, QRect)
 from PyQt5.QtWidgets import (QMainWindow, QPushButton, QLabel, QAction, QFileDialog)
 from PyQt5.QtGui import (QIcon, QImage, QPixmap)
 import cv2
+from detector import detector
 
 
 class Window(QMainWindow):
@@ -17,8 +18,17 @@ class Window(QMainWindow):
     def show_status(self, status):
         self.statusBar().showMessage(status)
 
+    # 传递filename来显示检测结果
+    def show_result_filename(self, filename):
+        self.output_label.setPixmap(QPixmap(filename))
+
+    # 传递三维数组来显示结果
+    def show_result_matrix(self, img):
+        self.output_label.setPixmap(self.matrix2pixmap(img))
+
     def __init__(self, parent=None):
         super().__init__()
+        self.detector = detector()
         # self.height self.width
         # 定义部件
         self.menubar = None
@@ -78,14 +88,17 @@ class Window(QMainWindow):
     def get_pic(self, i):
         return self.chosen_pics[i].replace("/", "\\")
 
-    def show_pic(self):
-        img = cv2.imread(os.path.abspath(self.get_pic(self.cur_index)))
-        height, width, bytesPerComponent = img.shape
+    def matrix2pixmap(self, matrix):
+        height, width, bytesPerComponent = matrix.shape
         bytesPerLine = 3 * width
-        cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
-        QImg = QImage(img.data, width, height, bytesPerLine, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(QImg)
-        self.pic_label.setPixmap(pixmap)
+        cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB, matrix)
+        qimg = QImage(matrix.data, width, height, bytesPerLine, QImage.Format_RGB888)
+        return QPixmap.fromImage(qimg)
+
+    def show_pic(self):
+        self.clean_output()
+        img = cv2.imread(os.path.abspath(self.get_pic(self.cur_index)))
+        self.pic_label.setPixmap(self.matrix2pixmap(img))
 
     def click_prev(self):
         self.cur_index = self.cur_index - 1
@@ -98,7 +111,11 @@ class Window(QMainWindow):
         self.set_button_enabled()
 
     def click_detect(self):
-        pass
+        image_path = self.get_pic(self.cur_index)
+        self.show_result_filename(self.detector.standing_cap_detect(image_path))
+
+    def clean_output(self):
+        self.output_label.setPixmap(QPixmap(""))
 
     def set_button_enabled(self):
         pic_amount = len(self.chosen_pics)
