@@ -41,7 +41,7 @@ class Window(QMainWindow):
         self.detect_button = None
         self.slider = None
         # 图片显示
-        self.chosen_pics = ["image.png"]
+        self.chosen_pics = ["image.JPG"]
         self.cur_index = 0
         # 初始化
         self.init_ui()

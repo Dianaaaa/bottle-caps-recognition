@@ -69,7 +69,9 @@ class ProConDetector:
                 c = c.astype("int")
                 x, y, w, h = cv2.boundingRect(c)
                 crop = origin_image[y-10:y+h+10, x-10:x+w+10]
-                pro_con = predict(crop)
+                grayImg = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+                pro_con = predict(grayImg)
+                # pro_con = 1
                 cv2.rectangle(origin_image, (x-10, y-10), (x+w+10, y+h+10), (0, 255, 0), 2)
                 cv2.putText(origin_image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 temp_text = ""

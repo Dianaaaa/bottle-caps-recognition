@@ -25,19 +25,19 @@ def predict(img):
 
 
 
-
-filepath = './Test/pros/'
-filelist = os.listdir(filepath)
-for filename in filelist:
-    print(filename)
-    if filename == ".gitkeep":
-        continue
-    # print(os.path.join(filepath, filename))
-    img=cv2.imread(os.path.join(filepath, filename),0)
-# cv2.imshow("img", img)
-# cv2.waitKey(0)
-    result = predict(img)
-    if result == 0:
-        print("fan")
-    if result == 1:
-        print("zheng")
+if __name__ == '__main__':
+    filepath = './Test/pros/'
+    filelist = os.listdir(filepath)
+    for filename in filelist:
+        print(filename)
+        if filename == ".gitkeep":
+            continue
+        # print(os.path.join(filepath, filename))
+        img=cv2.imread(os.path.join(filepath, filename),0)
+    # cv2.imshow("img", img)
+    # cv2.waitKey(0)
+        result = predict(img)
+        if result == 0:
+            print("fan")
+        if result == 1:
+            print("zheng")
