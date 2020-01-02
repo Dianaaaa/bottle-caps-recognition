@@ -105,7 +105,31 @@ class capDetecter(QWidget):
         im = cv2.imread(self.fname) 
         for standingLocation in reslist:
             cv2.polylines(im, standingLocation, True, 255, 3, cv2.LINE_AA)
+       
+
+        #输出坐标
+        for loc in reslist:
+            for cap in loc:
+                print("cap")
+                sum = 0
+                xmean = 0
+                ymean = 0
+                for i in range(0,4):
+                    sum=sum+1
+                    x = cap[i][0][0]
+                    y = cap[i][0][1]
+                    xmean += x
+                    ymean += y
+                
+                xmean = xmean//sum
+                ymean = ymean//sum
+                cv2.circle(im,(xmean,ymean),3,(0,0,213),-1)
+
         cv2.imshow("Window", im) 
+
+        
+
+         
 
 
 
