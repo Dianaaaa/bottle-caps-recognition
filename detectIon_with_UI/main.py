@@ -6,8 +6,9 @@ from PyQt5.QtCore import Qt, QEvent
 from PIL import Image, ImageFilter, ImageGrab,ImageDraw,ImageFont
 from util import *
 
-from detections import *
-
+# from detections import *
+from SIFT import * 
+# from rotate_matching import *
 class capDetecter(QWidget):
 
     def __init__(self):
@@ -100,18 +101,11 @@ class capDetecter(QWidget):
     def detection(self):
         print("detection start") 
         #detect standing caps
-        standingLocation = standing_cap_detection(self.fname)
-        print(standingLocation)
-        self.drawRect(standingLocation,"standing cap")
-
-    def drawRect(self,location,text):
-        im = Image.open(self.fname) 
-        draw = ImageDraw.Draw(im)
-        draw.rectangle(location,outline='blue',width =2)
-        
-        font = ImageFont.truetype("consola.ttf", 40, encoding="unic")#设置字
-        draw.text(location,text, 'fuchsia', font)
-        self.show_file(im)
+        reslist = standing_cap_detection(self.fname)  
+        im = cv2.imread(self.fname) 
+        for standingLocation in reslist:
+            cv2.polylines(im, standingLocation, True, 255, 3, cv2.LINE_AA)
+        cv2.imshow("Window", im) 
 
 
 
