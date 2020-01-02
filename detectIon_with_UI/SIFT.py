@@ -14,10 +14,10 @@ from matplotlib import pyplot as plt
 import os
 from util import *
 
+import time
 MIN_MATCH_COUNT = 5
  
-template_path = ".\\template"
-
+template_path = ".\\template" 
 
  
 def get_filelist(dir, Filelist):
@@ -32,6 +32,7 @@ def get_filelist(dir, Filelist):
  
  
 def standing_cap_detection(imagePath):
+    start_time = time.time()  # 记录程序开始运行时间
     a = []
     filelist = get_filelist(template_path,a)
     print(filelist)
@@ -49,6 +50,8 @@ def standing_cap_detection(imagePath):
         if res is not None:
             reslist.append( res)
 
+    end_time = time.time()  # 记录程序结束运行时间
+    print('Took %f second for one pic' % (end_time - start_time)) 
     return reslist
 
 def SIFT(img1,img2):
