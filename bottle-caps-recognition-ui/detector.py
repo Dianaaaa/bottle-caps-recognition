@@ -1,11 +1,15 @@
 from standing_cap_detection import *
+from pro_con_cap_detection import *
 from PIL import Image, ImageFilter, ImageGrab, ImageDraw, ImageFont
 
 
-class detector:
+class Detector:
 
     def __init__(self):
-        pass
+        self.pro_con_detector = ProConDetector()
+
+    def pro_con_detect(self, image_path, threshold):
+        return self.pro_con_detector.detect(image_path, threshold)
 
     # 返回临时文件名
     def standing_cap_detect(self, image_path):

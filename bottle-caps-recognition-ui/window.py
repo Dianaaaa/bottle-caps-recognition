@@ -2,10 +2,10 @@ import sys
 import os
 import PyQt5
 from PyQt5.QtCore import (Qt, QRect)
-from PyQt5.QtWidgets import (QMainWindow, QPushButton, QLabel, QAction, QFileDialog)
+from PyQt5.QtWidgets import (QMainWindow, QPushButton, QLabel, QAction, QFileDialog, QSlider, QLCDNumber)
 from PyQt5.QtGui import (QIcon, QImage, QPixmap)
 import cv2
-from detector import detector
+from detector import Detector
 
 
 class Window(QMainWindow):
@@ -28,7 +28,7 @@ class Window(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__()
-        self.detector = detector()
+        self.detector = Detector()
         # self.height self.width
         # 定义部件
         self.menubar = None
@@ -39,6 +39,7 @@ class Window(QMainWindow):
         self.prev_button = None
         self.next_button = None
         self.detect_button = None
+        self.slider = None
         # 图片显示
         self.chosen_pics = ["image.png"]
         self.cur_index = 0
@@ -49,6 +50,13 @@ class Window(QMainWindow):
         # 设置标题和窗口大小
         self.setGeometry(100, 100, 1280, 720)  # 前两个参数是显示窗口的位置
         self.setWindowTitle("瓶盖识别")
+        # debug slider
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.move(100, 660)
+        lcd = QLCDNumber(self)
+        lcd.move(300, 660)
+        self.slider.setMaximum(255)
+        self.slider.valueChanged.connect(lcd.display)
         # 初始化部件
         self.menubar = self.menuBar()  # 菜单栏
         self.pic_action = QAction(QIcon("image.png"), "图片", self)  # 菜单栏选择图片action
@@ -112,7 +120,11 @@ class Window(QMainWindow):
 
     def click_detect(self):
         image_path = self.get_pic(self.cur_index)
-        self.show_result_filename(self.detector.standing_cap_detect(image_path))
+        # self.show_result_filename(self.detector.standing_cap_detect(image_path))
+        # cv2.imshow("Image", self.detector.pro_con_detect(image_path, self.slider.value()))
+        self.show_result_matrix(self.detector.pro_con_detect(image_path, 120))
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
     def clean_output(self):
         self.output_label.setPixmap(QPixmap(""))
