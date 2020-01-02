@@ -45,8 +45,7 @@ FLANN是高维数据的快速最近邻算法。
 
 效果：
 
-https://github.com/Dianaaaa/bottle-caps-recognition/report_image/template_matching.PNG
-
+![avatar](https://github.com/Dianaaaa/bottle-caps-recognition/blob/master/report_image/template_matching.PNG)
 # 一些有用的资料
 
 如何用python+opencv调用手机的摄像头：
