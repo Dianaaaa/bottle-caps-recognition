@@ -2,7 +2,7 @@ import argparse
 import imutils
 import cv2
 import numpy as np
-# from predict import *
+from predict import *
 
 
 class ProConDetector:
@@ -69,17 +69,15 @@ class ProConDetector:
                 c = c.astype("int")
                 x, y, w, h = cv2.boundingRect(c)
                 crop = origin_image[y-10:y+h+10, x-10:x+w+10]
-                cv2.imshow("crop", crop)
-                cv2.waitKey(0)
-                # pro_con = predict(crop)
+                pro_con = predict(crop)
                 cv2.rectangle(origin_image, (x-10, y-10), (x+w+10, y+h+10), (0, 255, 0), 2)
                 cv2.putText(origin_image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                # temp_text = ""
-                # if pro_con == 0:
-                #     temp_text = "fan"
-                # if pro_con == 1:
-                #     temp_text = "zheng"
-                # cv2.putText(origin_image, temp_text, (cX, cY+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                temp_text = ""
+                if pro_con == 0:
+                    temp_text = "fan"
+                if pro_con == 1:
+                    temp_text = "zheng"
+                cv2.putText(origin_image, temp_text, (cX, cY+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
             # cv2.drawContours(origin_image, [c], -1, (0, 255, 0), 2)
         return origin_image
