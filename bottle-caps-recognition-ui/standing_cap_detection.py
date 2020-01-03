@@ -83,8 +83,8 @@ def SIFT(img1, img2):
         src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
         dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
 
-        # M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 1.0)
-        M, mask = cv2.findHomography(src_pts, dst_pts, 0, confidence=1.0)
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, confidence=0.95)
+        #M, mask = cv2.findHomography(src_pts, dst_pts, 0, confidence=1.0)
         matchesMask = mask.ravel().tolist()
 
         h, w = img1.shape
