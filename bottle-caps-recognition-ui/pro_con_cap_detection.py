@@ -80,14 +80,15 @@ class ProConDetector:
             pro_con = predict(grayImg)
             # pro_con = 1
             cv2.rectangle(origin_image, (x-10, y-10), (x+w+10, y+h+10), (0, 255, 0), 2)
-            cv2.putText(origin_image, "circle", (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            # cv2.putText(origin_image, "circle", (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             temp_text = ""
             if pro_con == 0:
-                temp_text = "fan"
+                temp_text = "back"
             if pro_con == 1:
-                temp_text = "zheng"
+                temp_text = "front"
             cv2.putText(origin_image, temp_text, (cX, cY+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
+            coordinate = "(" + str(cX) + ", " + str(cY) + ")"
+            cv2.putText(origin_image, coordinate, (cX, cY+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             # cv2.drawContours(origin_image, [c], -1, (0, 255, 0), 2)
         return origin_image
 
