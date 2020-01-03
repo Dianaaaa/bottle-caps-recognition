@@ -169,10 +169,10 @@ descriptor_test = get_descriptors('Test')
 ##print 'descriptor_template.shape', descriptor_template[0].shape
 
 
-NUMBER_OF_CLUSTERS = 252
+NUMBER_OF_CLUSTERS = 300
 
 
-while NUMBER_OF_CLUSTERS <= 252:
+while NUMBER_OF_CLUSTERS <= 500:
     print("="*80)
     print('Number of clusters = ', NUMBER_OF_CLUSTERS)
     #Training the model on template images to get the bag of words vocabulary, and cluster centers.
