@@ -51,6 +51,7 @@ class ProConDetector:
         cnts = cv2.findContours(thresh.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         cnts = imutils.grab_contours(cnts)
         # loop over the contours
+        rects = []
         for c in cnts:
             # compute the center of the contour, then detect the name of the
             # shape using only the contour
@@ -68,18 +69,24 @@ class ProConDetector:
                 c *= ratio
                 c = c.astype("int")
                 x, y, w, h = cv2.boundingRect(c)
-                crop = origin_image[y-10:y+h+10, x-10:x+w+10]
-                grayImg = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-                pro_con = predict(grayImg)
-                # pro_con = 1
-                cv2.rectangle(origin_image, (x-10, y-10), (x+w+10, y+h+10), (0, 255, 0), 2)
-                cv2.putText(origin_image, shape, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                temp_text = ""
-                if pro_con == 0:
-                    temp_text = "fan"
-                if pro_con == 1:
-                    temp_text = "zheng"
-                cv2.putText(origin_image, temp_text, (cX, cY+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                rects.append((x, y, w, h, cX, cY))
+
+        rects = self.remove_overlap(rects)
+
+        for rect in rects:
+            x, y, w, h, cX, cY = rect
+            crop = origin_image[y-10:y+h+10, x-10:x+w+10]
+            grayImg = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+            pro_con = predict(grayImg)
+            # pro_con = 1
+            cv2.rectangle(origin_image, (x-10, y-10), (x+w+10, y+h+10), (0, 255, 0), 2)
+            cv2.putText(origin_image, "circle", (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            temp_text = ""
+            if pro_con == 0:
+                temp_text = "fan"
+            if pro_con == 1:
+                temp_text = "zheng"
+            cv2.putText(origin_image, temp_text, (cX, cY+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
             # cv2.drawContours(origin_image, [c], -1, (0, 255, 0), 2)
         return origin_image
@@ -113,5 +120,20 @@ class ProConDetector:
         # return the name of the shape
         return shape
 
-
+    @staticmethod
+    def remove_overlap(rects):
+        noverlap_rects = []
+        for i in range(len(rects)):
+            x, y, w, h, cX, cY = rects[i]
+            flag = True
+            for j in range(len(rects)):
+                if i == j:
+                    continue
+                x1, y1, w1, h1, cX1, cY1 = rects[j]
+                if x > x1 and y > y1 and x + w < x1 + w1 and y + h < y1 + h1:
+                    flag = False
+                    break
+            if flag:
+                noverlap_rects.append(rects[i])
+        return noverlap_rects
 
